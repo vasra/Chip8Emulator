@@ -185,5 +185,51 @@ void emulateCPUCycle()
                      // Each row of 8 pixels is read as bit-coded starting from memory location I
                      // I value doesn’t change after the execution of this instruction.
                      // As described above, VF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn, and to 0 if that doesn’t happen
+
+            unsigned short x = V[(opcode & 0x0F00) >> 8];
+            unsigned short y = V[(opcode & 0x00F0) >> 4];
+            unsigned short N = opcode & 0x000F;
+            unsigned short pixel;
+            V[0xF] = 0;
+
+            for(short line = 0; line < N; line++)
+            {
+                pixel = memory[I + line];
+                for(short column = 0; column < 8; column++)
+                {
+                    if(pixel & (0xF0 >> column) != 0)
+                    {
+                        if(gfx[x + line + ((y + column) * 64)] == 1)
+                            V[0xF] = 1;
+                    }
+                    gfx[x + line + ((y + column) * 64)] ^= 1;
+                }
+            }
+            drawFlag = true;
+            pc += 2;
+            break;
+
+        case 0xE000:
+            switch(opcode & 0x00F0)
+            {
+                case 0x0090: // EX9E. Skips the next instruction if the key stored in VX is pressed
+                    if (key[V[(opcode & 0x0F00) >> 8]] != 0)
+                        pc += 4;
+                    else
+                        pc += 2;
+                    break;
+
+                case 0x00A0: // EXA1. Skips the next instruction if the key stored in VX isn't pressed
+                    if (key[V[(opcode & 0x0F00) >> 8]] == 0)
+                        pc += 4;
+                    else
+                        pc += 2;
+                    break;
+
+                default:
+                    printf("Unknown opcode: 0x%X\n", opcode);
+            }
+            break;
+
     }
 }

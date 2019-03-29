@@ -13,6 +13,8 @@ unsigned short sound_timer; // the sound timer
 unsigned char gfx[64 * 32];  // pixels, 2048 in total
 unsigned char key[16];      // buttons used 0 - F
 
+bool drawFlag;
+
 unsigned char fontset[80] =
 {
     0xF0, 0x90, 0x90, 0x90, 0xF0, //0
